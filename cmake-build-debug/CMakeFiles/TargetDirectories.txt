@@ -1,0 +1,5 @@
+/home/alex/Документы/pixelator_cours_prj/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/alex/Документы/pixelator_cours_prj/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/alex/Документы/pixelator_cours_prj/cmake-build-debug/Pixelator/CMakeFiles/rebuild_cache.dir
+/home/alex/Документы/pixelator_cours_prj/cmake-build-debug/Pixelator/CMakeFiles/edit_cache.dir
+/home/alex/Документы/pixelator_cours_prj/cmake-build-debug/Pixelator/CMakeFiles/source.dir
