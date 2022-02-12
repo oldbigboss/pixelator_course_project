@@ -74,37 +74,8 @@ Mat makebig(Mat img, int pixsize) {
             big.at<Vec3b>(i, j) = img.at<Vec3b>(i/pixsize, j/pixsize);
     return big;
 }
-Mat numerator(Mat sour, Mat nums){
-    int l;
-    for (int i = 0; i < nums.size().height; i++) {
-        for (int j = 0; j < nums.size().width; j++) {
-            l = nums.at<int>(i, j);
-            if (sour.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255,255,255)) {
-                cv::putText(sour, //target image
-                            to_string(nums.at<int>(i, j)), //text
-                            cv::Point(j * 20 + 4, i * 20 + 14), //top-left position
-                            cv::FONT_HERSHEY_DUPLEX,
-                            0.3,
-                            CV_RGB(0, 0, 0), //font color
-                            1);
-            }
-        }
-    }
-    return sour;
-}
-int printe(Mat nums){
-    int l;
-    for (int j = 0; j < nums.size().width; j++) {
-        for (int i = 0; i < nums.size().height; i++){
-            l = nums.at<int>(i, j);
-            }
-        }
-    }
-
 Mat kroswording1(Mat img){
     Mat ebala;
-    Mat e1;
-    e1.push_back(Mat(img.size().height,img.size().width,CV_8UC1, int(0)));
     ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
     int nums[img.size().height][img.size().width];
     int x =0;
@@ -114,12 +85,10 @@ Mat kroswording1(Mat img){
         for (int j = 0; j < img.size().width; j++){
             if (img.at<Vec3b>(i, j) != Vec<uchar, 3>(255, 255, 255)){
                 if (img.at<Vec3b>(i, j) == tem){
-                    e1.at<int>(y,x-1) = e1.at<int>(y,x-1) +1;
                     nums[y][x-1] = nums[y][x-1]+1;
                 }
                 if (img.at<Vec3b>(i, j) != tem) {
                     ebala.at<Vec3b>(y, x) = img.at<Vec3b>(i, j);
-                    e1.at<int>(y,x)=1;
                     nums[y][x]=1;
                     x++;
 
@@ -128,8 +97,6 @@ Mat kroswording1(Mat img){
 
                 tem = img.at<Vec3b>(i, j);
             }
-        //tem=Vec<uchar, 3>(255, 255, 255);
-
         }
         tem = Vec3b(3,2,3);
         x=0;
@@ -149,7 +116,6 @@ Mat kroswording1(Mat img){
             }
         }
     }
-    //fu = numerator(fu,e1);
     return fu;
 }
 
@@ -182,44 +148,34 @@ Mat skl2(Mat img1, Mat img2){
 
 Mat kroswording2(Mat img){
     Mat ebala;
-    Mat e2;
     ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
     int nums[img.size().height][img.size().width];
-    e2.push_back(Mat(img.size().height,img.size().width,CV_8UC1, int(0)));
     int x =0;
     int y =0;
     int l;
-    l=e2.at<int>(1,1);
     Vec<uchar, 3> tem;
     for (int i = 0; i < img.size().width; i++) {
         for (int j = 0; j < img.size().height; j++) {
             if (img.at<Vec3b>(j, i) != Vec<uchar, 3>(255, 255, 255)){
                 if (img.at<Vec3b>(j, i) == tem){
-                    nums[x-1][y] =  e2.at<int>(x-1,y) +1;
-                    e2.at<int>(x-1, y) = e2.at<int>(x-1,y) +1;
+                    nums[x-1][y] =  nums[x-1][y] +1;
                 }
                 if (img.at<Vec3b>(j, i) != tem) {
                     ebala.at<Vec3b>(x, y) = img.at<Vec3b>(j, i);
                     nums[x][y]=1;
-                    e2.at<int>(x, y) = 1;
                     x++;
                 }
                 tem = img.at<Vec3b>(j, i);
             }
-
         }
-        l=e2.at<int>(1,1);
         tem = Vec3b(3,2,3);
-        l=e2.at<int>(0,0);
         y++;
         x=0;
     }
-    int z = printe(e2);
     Mat fu = makebig(ebala,20);
     for (int i = 0; i < img.size().height; i++) {
         for (int j = 0; j < img.size().width; j++) {
             if (fu.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255,255,255)) {
-                l=e2.at<int>(1,1);
                 cv::putText(fu, //target image
                             to_string(nums[i][j]), //text
                             cv::Point(j * 20 + 5, i * 20 + 12), //top-left position
@@ -231,7 +187,6 @@ Mat kroswording2(Mat img){
         }
     }
 
-    //fu = numerator(fu,e2);
     return fu;
 }
 int main()
