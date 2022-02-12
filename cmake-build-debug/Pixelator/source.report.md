@@ -1,6 +1,6 @@
 ## Курсовая работа по дисциплине Обработка изображений
 автор: Верещагин А.В.
-дата: 2021-11-14T23:35:10
+дата: 2022-02-12T15:24:42
 
 ### Текст программы
 
@@ -12,8 +12,8 @@ using namespace cv;
 //#if _DEBUG
 //#pragma comment(lib,"opencv_world341d.lib")
 //#else
-#pragma comment(lib,"opencv_world341.lib")
-#
+//#pragma comment(lib,"opencv_world341.lib")
+//#
 
 Mat colorq(Mat ocv, int cluster_count){
 
@@ -71,6 +71,124 @@ Mat drawgrid( Mat mat_img,int stepSize ){
     return mat_img;
 }
 
+Mat makebig(Mat img, int pixsize) {
+    Mat big;
+    int new_width = img.size().width*pixsize;
+    int new_height = img.size().height*pixsize;
+    big.push_back(Mat(new_height,new_width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    for (int i = 0; i < new_height; i++)
+        for (int j = 0; j < new_width; j++)
+            big.at<Vec3b>(i, j) = img.at<Vec3b>(i/pixsize, j/pixsize);
+    return big;
+}
+Mat numerator(Mat sour, Mat nums){
+    for (int i = 0; i < nums.size().height; i++) {
+        for (int j = 0; j < nums.size().width; j++) {
+            if (sour.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255,255,255)) {
+                cv::putText(sour, //target image
+                            to_string(nums.at<int>(i, j)), //text
+                            cv::Point(j * 20 + 4, i * 20 + 14), //top-left position
+                            cv::FONT_HERSHEY_DUPLEX,
+                            0.3,
+                            CV_RGB(0, 0, 0), //font color
+                            1);
+            }
+        }
+    }
+    return sour;
+}
+Mat kroswording1(Mat img){
+    Mat ebala;
+    Mat e1;
+    e1.push_back(Mat(img.size().height,img.size().width,CV_8UC1, int(0)));
+    ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    int x =0;
+    int y =0;
+    Vec<uchar, 3> tem;
+    for (int i = 0; i < img.size().height; i++) {
+        for (int j = 0; j < img.size().width; j++){
+            if (img.at<Vec3b>(i, j) != Vec<uchar, 3>(255, 255, 255)){
+                if (img.at<Vec3b>(i, j) == tem){
+                    e1.at<int>(y,x-1) = e1.at<int>(y,x-1) +1;
+                }
+                if (img.at<Vec3b>(i, j) != tem) {
+                    ebala.at<Vec3b>(y, x) = img.at<Vec3b>(i, j);
+                    e1.at<int>(y,x)=1;
+                    x++;
+                }
+
+                tem = img.at<Vec3b>(i, j);
+            }
+        //tem=Vec<uchar, 3>(255, 255, 255);
+
+        }
+        tem = Vec3b(3,2,3);
+        x=0;
+        y++;
+    }
+    Mat fu = makebig(ebala,20);
+    fu = numerator(fu,e1);
+    return fu;
+}
+
+Mat skl1(Mat img1, Mat img2){
+
+    // Get dimension of final image
+    int rows = max(img1.rows, img2.rows);
+    int cols = img1.cols + img2.cols;
+
+    Mat3b res(rows, cols, Vec3b(255,255,255));
+
+    // Copy images in correct position
+    img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
+    img2.copyTo(res(Rect(img1.cols, 0, img2.cols, img2.rows)));
+    return res;
+}
+Mat skl2(Mat img1, Mat img2){
+
+    // Get dimension of final image
+    int rows = (img1.rows + img2.rows);
+    int cols = max(img1.cols, img2.cols);
+
+    Mat3b res(rows, cols, Vec3b(255,255,255));
+
+    // Copy images in correct position
+    img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
+    img2.copyTo(res(Rect(0, img1.rows, img2.cols, img2.rows)));
+    return res;
+}
+
+Mat kroswording2(Mat img){
+    Mat ebala;
+    Mat e2;
+    ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    e2.push_back(Mat(img.size().height,img.size().width,CV_8UC1, int(0)));
+    int x =0;
+    int y =0;
+    Vec<uchar, 3> tem;
+    for (int i = 0; i < img.size().width; i++) {
+        for (int j = 0; j < img.size().height; j++) {
+            if (img.at<Vec3b>(j, i) != Vec<uchar, 3>(255, 255, 255)){
+                if (img.at<Vec3b>(j, i) == tem){
+                    e2.at<int>(x-1, y) = e2.at<int>(x-1,y) +1;
+                }
+                if (img.at<Vec3b>(j, i) != tem) {
+                    ebala.at<Vec3b>(x, y) = img.at<Vec3b>(j, i);
+                    e2.at<int>(x, y) = 1;
+                    x++;
+                }
+                tem = img.at<Vec3b>(j, i);
+            }
+
+        }
+        tem = Vec3b(3,2,3);
+        x=0;
+        y++;
+    }
+    Mat fu = makebig(ebala,20);
+    fu = numerator(fu,e2);
+    return fu;
+}
 int main()
 {
 
@@ -93,7 +211,7 @@ int main()
         return 0;
     }
 
-    //int pixel_size = 10;
+    int pixel_size = 20;
     int down_width = image.cols / (image.rows / down_height);
     Mat resize_down;
     resize(image, resize_down, Size(down_width, down_height), INTER_NEAREST);
@@ -159,15 +277,20 @@ int main()
     imwrite("pixelated.png",img_quantized );
     imshow("qu",img_quantized);
 
+    Mat z = kroswording1(img_quantized);
+    Mat x = kroswording2(img_quantized);
 
-//
-//    Mat resize_up;
-//    // resize back
-//    resize(img_quantized, resize_up, Size(img_quantized.cols*pixel_size, img_quantized.rows*pixel_size), INTER_AREA);
-//    imshow("qua",resize_up);
-//
-//    Mat final =  drawgrid(resize_up, pixel_size);
-//    imshow("res",final);
+//    // уведичиваем матрицу назад применяя интерполяцию по площади
+    Mat resize_up = makebig(img_quantized, pixel_size);
+//    imshow("aaa", z);
+    Mat y = skl1(resize_up, z);
+    Mat ya = skl2(y,x);
+
+    //resize(img_quantized, resize_up, Size(img_quantized.cols*pixel_size, img_quantized.rows*pixel_size), INTER_NEAREST);
+    imshow("qua",ya);
+    // рисуем сетку
+    Mat final =  drawgrid(ya, pixel_size);
+    imshow("res",final);
 
 
     waitKey(0);
