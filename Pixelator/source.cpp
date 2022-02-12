@@ -1,21 +1,17 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+
 using namespace std;
 using namespace cv;
-//#if _DEBUG
-//#pragma comment(lib,"opencv_world341d.lib")
-//#else
-//#pragma comment(lib,"opencv_world341.lib")
-//#
 
-Mat colorq(Mat ocv, int cluster_count){
+Mat colorq(Mat ocv, int cluster_count) {
 
 // convert to float & reshape to a [3 x W*H] Mat
 //  (so every pixel is on a row of it's own)
 
     Mat data;
-    ocv.convertTo(data,CV_32F);
-    data = data.reshape(1,data.total());
+    ocv.convertTo(data, CV_32F);
+    data = data.reshape(1, data.total());
 
 // do kmeans
     Mat labels, centers;
@@ -23,12 +19,12 @@ Mat colorq(Mat ocv, int cluster_count){
            KMEANS_PP_CENTERS, centers);
 
 // reshape both to a single row of Vec3f pixels:
-    centers = centers.reshape(3,centers.rows);
-    data = data.reshape(3,data.rows);
+    centers = centers.reshape(3, centers.rows);
+    data = data.reshape(3, data.rows);
 
 // replace pixel values with their center value:
-    Vec3f *p = data.ptr<Vec3f>();
-    for (size_t i=0; i<data.rows; i++) {
+    auto *p = data.ptr<Vec3f>();
+    for (size_t i = 0; i < data.rows; i++) {
         int center_id = labels.at<int>(i);
         p[i] = centers.at<Vec3f>(center_id);
     }
@@ -39,11 +35,10 @@ Mat colorq(Mat ocv, int cluster_count){
     return ocv;
 }
 
-Mat bgrThreshold_white(Mat img){
+Mat bgrThreshold_white(Mat img) {
     for (int i = 0; i < img.rows; i++)
         for (int j = 0; j < img.cols; j++)
-            if (img.at<Vec3b>(i, j)[0] > 210  && img.at<Vec3b>(i, j)[1] >  210 &&img.at<Vec3b>(i, j)[2] >  210)
-            {
+            if (img.at<Vec3b>(i, j)[0] > 210 && img.at<Vec3b>(i, j)[1] > 210 && img.at<Vec3b>(i, j)[2] > 210) {
                 img.at<Vec3b>(i, j)[0] = 255;
                 img.at<Vec3b>(i, j)[1] = 255;
                 img.at<Vec3b>(i, j)[2] = 255;
@@ -51,45 +46,46 @@ Mat bgrThreshold_white(Mat img){
     return img;
 }
 
-Mat drawgrid( Mat mat_img,int stepSize ){
+Mat drawgrid(Mat mat_img, int stepSize) {
 
     int width = mat_img.size().width;
     int height = mat_img.size().height;
 
-    for (int i = 0; i<height; i += stepSize)
+    for (int i = 0; i < height; i += stepSize)
         cv::line(mat_img, Point(0, i), Point(width, i), cv::Scalar(0, 0, 0));
 
-    for (int i = 0; i<width; i += stepSize)
+    for (int i = 0; i < width; i += stepSize)
         cv::line(mat_img, Point(i, 0), Point(i, height), cv::Scalar(0, 0, 0));
     return mat_img;
 }
 
 Mat makebig(Mat img, int pixsize) {
     Mat big;
-    int new_width = img.size().width*pixsize;
-    int new_height = img.size().height*pixsize;
-    big.push_back(Mat(new_height,new_width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    int new_width = img.size().width * pixsize;
+    int new_height = img.size().height * pixsize;
+    big.push_back(Mat(new_height, new_width, CV_8UC3, Vec<uchar, 3>(255, 255, 255)));
     for (int i = 0; i < new_height; i++)
         for (int j = 0; j < new_width; j++)
-            big.at<Vec3b>(i, j) = img.at<Vec3b>(i/pixsize, j/pixsize);
+            big.at<Vec3b>(i, j) = img.at<Vec3b>(i / pixsize, j / pixsize);
     return big;
 }
-Mat kroswording1(Mat img){
+
+Mat kroswording1(Mat img) {
     Mat ebala;
-    ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    ebala.push_back(Mat(img.size().height, img.size().width, CV_8UC3, Vec<uchar, 3>(255, 255, 255)));
     int nums[img.size().height][img.size().width];
-    int x =0;
-    int y =0;
+    int x = 0;
+    int y = 0;
     Vec<uchar, 3> tem;
     for (int i = 0; i < img.size().height; i++) {
-        for (int j = 0; j < img.size().width; j++){
-            if (img.at<Vec3b>(i, j) != Vec<uchar, 3>(255, 255, 255)){
-                if (img.at<Vec3b>(i, j) == tem){
-                    nums[y][x-1] = nums[y][x-1]+1;
+        for (int j = 0; j < img.size().width; j++) {
+            if (img.at<Vec3b>(i, j) != Vec<uchar, 3>(255, 255, 255)) {
+                if (img.at<Vec3b>(i, j) == tem) {
+                    nums[y][x - 1] = nums[y][x - 1] + 1;
                 }
                 if (img.at<Vec3b>(i, j) != tem) {
                     ebala.at<Vec3b>(y, x) = img.at<Vec3b>(i, j);
-                    nums[y][x]=1;
+                    nums[y][x] = 1;
                     x++;
 
                 }
@@ -98,14 +94,14 @@ Mat kroswording1(Mat img){
                 tem = img.at<Vec3b>(i, j);
             }
         }
-        tem = Vec3b(3,2,3);
-        x=0;
+        tem = Vec3b(3, 2, 3);
+        x = 0;
         y++;
     }
-    Mat fu = makebig(ebala,20);
+    Mat fu = makebig(ebala, 20);
     for (int i = 0; i < img.size().height; i++) {
         for (int j = 0; j < img.size().width; j++) {
-            if (fu.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255,255,255)) {
+            if (fu.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255, 255, 255)) {
                 cv::putText(fu, //target image
                             to_string(nums[i][j]), //text
                             cv::Point(j * 20 + 5, i * 20 + 12), //top-left position
@@ -119,26 +115,27 @@ Mat kroswording1(Mat img){
     return fu;
 }
 
-Mat skl1(Mat img1, Mat img2){
+Mat skl1(const Mat &img1, const Mat &img2) {
 
     // Get dimension of final image
     int rows = max(img1.rows, img2.rows);
     int cols = img1.cols + img2.cols;
 
-    Mat3b res(rows, cols, Vec3b(255,255,255));
+    Mat3b res(rows, cols, Vec3b(255, 255, 255));
 
     // Copy images in correct position
     img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
     img2.copyTo(res(Rect(img1.cols, 0, img2.cols, img2.rows)));
     return res;
 }
-Mat skl2(Mat img1, Mat img2){
+
+Mat skl2(const Mat &img1, const Mat &img2) {
 
     // Get dimension of final image
     int rows = (img1.rows + img2.rows);
     int cols = max(img1.cols, img2.cols);
 
-    Mat3b res(rows, cols, Vec3b(255,255,255));
+    Mat3b res(rows, cols, Vec3b(255, 255, 255));
 
     // Copy images in correct position
     img1.copyTo(res(Rect(0, 0, img1.cols, img1.rows)));
@@ -146,36 +143,35 @@ Mat skl2(Mat img1, Mat img2){
     return res;
 }
 
-Mat kroswording2(Mat img){
+Mat kroswording2(Mat img) {
     Mat ebala;
-    ebala.push_back(Mat(img.size().height,img.size().width,CV_8UC3,Vec<uchar, 3>(255,255,255)));
+    ebala.push_back(Mat(img.size().height, img.size().width, CV_8UC3, Vec<uchar, 3>(255, 255, 255)));
     int nums[img.size().height][img.size().width];
-    int x =0;
-    int y =0;
-    int l;
+    int x = 0;
+    int y = 0;
     Vec<uchar, 3> tem;
     for (int i = 0; i < img.size().width; i++) {
         for (int j = 0; j < img.size().height; j++) {
-            if (img.at<Vec3b>(j, i) != Vec<uchar, 3>(255, 255, 255)){
-                if (img.at<Vec3b>(j, i) == tem){
-                    nums[x-1][y] =  nums[x-1][y] +1;
+            if (img.at<Vec3b>(j, i) != Vec<uchar, 3>(255, 255, 255)) {
+                if (img.at<Vec3b>(j, i) == tem) {
+                    nums[x - 1][y] = nums[x - 1][y] + 1;
                 }
                 if (img.at<Vec3b>(j, i) != tem) {
                     ebala.at<Vec3b>(x, y) = img.at<Vec3b>(j, i);
-                    nums[x][y]=1;
+                    nums[x][y] = 1;
                     x++;
                 }
                 tem = img.at<Vec3b>(j, i);
             }
         }
-        tem = Vec3b(3,2,3);
+        tem = Vec3b(3, 2, 3);
         y++;
-        x=0;
+        x = 0;
     }
-    Mat fu = makebig(ebala,20);
+    Mat fu = makebig(ebala, 20);
     for (int i = 0; i < img.size().height; i++) {
         for (int j = 0; j < img.size().width; j++) {
-            if (fu.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255,255,255)) {
+            if (fu.at<Vec3b>(i * 20 + 4, j * 20 + 14) != Vec<uchar, 3>(255, 255, 255)) {
                 cv::putText(fu, //target image
                             to_string(nums[i][j]), //text
                             cv::Point(j * 20 + 5, i * 20 + 12), //top-left position
@@ -189,20 +185,20 @@ Mat kroswording2(Mat img){
 
     return fu;
 }
-int main()
-{
 
-    int colors_count=3;
+int main() {
+
+    int colors_count = 3;
     int down_height = 50;
     cout << "Задайте желаемое количество строк для кроссворда" << endl;
     cout << "20 -маленький, 50 - средний, 100 - большой" << endl;
-    cin >> down_height ;
+    cin >> down_height;
     cout << "Задайте желаемое количество цветов кроссворда, рекомендуется от 3 до 8" << endl;
     cin >> colors_count;
     std::string path = "/home/alex/Загрузки/3.jpg";
     std::string pa;
     cout << "Введите путь до картинки или /home/alex/Загрузки/3.jpg" << endl;
-    cin>> path;
+    cin >> path;
 
     Mat image = imread(path);
 
@@ -219,7 +215,7 @@ int main()
 //    imshow("1", resize_down);
     Mat img_gray;
     cvtColor(resize_down, img_gray, COLOR_BGR2GRAY);
-  //  imshow("2", img_gray);
+    //  imshow("2", img_gray);
     Mat inverted_binary_image;
     //Mat thresh;
     threshold(img_gray, inverted_binary_image, 200, 255, THRESH_BINARY_INV);
@@ -234,25 +230,25 @@ int main()
     findContours(inverted_binary_image, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
     vector<Point> contour = contours[0];
     int start_col, end_col, start_row, end_row;
-    Point extLeft  = *min_element(contour.begin(), contour.end(),
-                                  [](const Point& lhs, const Point& rhs){
-                                      return lhs.x < rhs.x;
-                                  });
+    Point extLeft = *min_element(contour.begin(), contour.end(),
+                                 [](const Point &lhs, const Point &rhs) {
+                                     return lhs.x < rhs.x;
+                                 });
     start_col = extLeft.x;
     Point extRight = *max_element(contour.begin(), contour.end(),
-                                  [](const Point& lhs, const Point& rhs) {
+                                  [](const Point &lhs, const Point &rhs) {
                                       return lhs.x < rhs.x;
                                   });
     end_col = extRight.x;
-    Point extTop   = *min_element(contour.begin(), contour.end(),
-                                  [](const Point& lhs, const Point& rhs) {
-                                      return lhs.y < rhs.y;
-                                  });
+    Point extTop = *min_element(contour.begin(), contour.end(),
+                                [](const Point &lhs, const Point &rhs) {
+                                    return lhs.y < rhs.y;
+                                });
     start_row = extTop.y;
-    Point extBot   = *max_element(contour.begin(), contour.end(),
-                                  [](const Point& lhs, const Point& rhs) {
-                                      return lhs.y < rhs.y;
-                                  });
+    Point extBot = *max_element(contour.begin(), contour.end(),
+                                [](const Point &lhs, const Point &rhs) {
+                                    return lhs.y < rhs.y;
+                                });
     end_row = extBot.y;
 
     // draw contours on the original image
@@ -270,11 +266,11 @@ int main()
 //    imshow("Croped mage", crop);
 //    waitKey();
     Mat img_quantized;
-    img_quantized = colorq(crop,colors_count+1);
+    img_quantized = colorq(crop, colors_count + 1);
     //imshow("4", img_quantized);
 
     img_quantized = bgrThreshold_white(img_quantized);
-    imwrite("pixelated.png",img_quantized );
+    imwrite("pixelated.png", img_quantized);
     //imshow("qu",img_quantized);
 
     Mat z = kroswording1(img_quantized);
@@ -284,13 +280,13 @@ int main()
     Mat resize_up = makebig(img_quantized, pixel_size);
 //    imshow("aaa", z);
     Mat y = skl1(resize_up, z);
-    Mat ya = skl2(y,x);
+    Mat ya = skl2(y, x);
 
     //resize(img_quantized, resize_up, Size(img_quantized.cols*pixel_size, img_quantized.rows*pixel_size), INTER_NEAREST);
     //imshow("qua",ya);
     // рисуем сетку
-    Mat final =  drawgrid(ya, pixel_size);
-    imshow("result",final);
+    Mat final = drawgrid(ya, pixel_size);
+    imshow("result", final);
 
 
     waitKey(0);
