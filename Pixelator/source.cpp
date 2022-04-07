@@ -73,7 +73,7 @@ Mat makebig(Mat img, int pixsize) {
 Mat kroswording1(Mat img) {
     Mat ebala;
     ebala.push_back(Mat(img.size().height, img.size().width, CV_8UC3, Vec<uchar, 3>(255, 255, 255)));
-    int nums[img.size().height][img.size().width];
+    int nums[255][255];
     int x = 0;
     int y = 0;
     Vec<uchar, 3> tem;
@@ -146,7 +146,7 @@ Mat skl2(const Mat &img1, const Mat &img2) {
 Mat kroswording2(Mat img) {
     Mat ebala;
     ebala.push_back(Mat(img.size().height, img.size().width, CV_8UC3, Vec<uchar, 3>(255, 255, 255)));
-    int nums[img.size().height][img.size().width];
+    int nums[255][255];
     int x = 0;
     int y = 0;
     Vec<uchar, 3> tem;
