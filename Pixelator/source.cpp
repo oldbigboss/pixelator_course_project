@@ -218,7 +218,7 @@ int main() {
     //  imshow("2", img_gray);
     Mat inverted_binary_image;
     //Mat thresh;
-    threshold(img_gray, inverted_binary_image, 200, 255, THRESH_BINARY_INV);
+    threshold(img_gray, inverted_binary_image, 230, 255, THRESH_BINARY_INV);
     //imshow("3", inverted_binary_image);
 
     //bitwise_not(thresh, inverted_binary_image);
