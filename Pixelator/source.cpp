@@ -190,14 +190,14 @@ int main() {
 
     int colors_count = 3;
     int down_height = 50;
-    cout << "Задайте желаемое количество строк для кроссворда" << endl;
-    cout << "20 -маленький, 50 - средний, 100 - большой" << endl;
+    cout << "Enter the number of lines in crossword" << endl;
+    cout << "20 - small, 50 - average, 100 - big, 220 - max" << endl;
     cin >> down_height;
-    cout << "Задайте желаемое количество цветов кроссворда, рекомендуется от 3 до 8" << endl;
+    cout << "Enter the number of colors from 3 to 8" << endl;
     cin >> colors_count;
-    std::string path = "/home/alex/Загрузки/3.jpg";
-    std::string pa;
-    cout << "Введите путь до картинки или /home/alex/Загрузки/3.jpg" << endl;
+    std::string path ;
+  //  std::string pa;
+    cout << "Enter path to picture Example: ../imgs/3.jpg" << endl;
     cin >> path;
 
     Mat image = imread(path);
@@ -270,7 +270,7 @@ int main() {
     //imshow("4", img_quantized);
 
     img_quantized = bgrThreshold_white(img_quantized);
-    imwrite("pixelated.png", img_quantized);
+    //imwrite("pixelated.png", img_quantized);
     //imshow("qu",img_quantized);
 
     Mat z = kroswording1(img_quantized);
